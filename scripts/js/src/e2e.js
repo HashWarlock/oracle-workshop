@@ -26,6 +26,7 @@ function loadContract(name) {
 
 async function getWorkerPubkey(api) {
     const workers = await api.query.phalaRegistry.workers.entries();
+    console.log("${workers}");
     const worker = workers[0][0].args[0].toString();
     return worker;
 }
@@ -134,9 +135,21 @@ async function main() {
         provider: wsProvider,
         types: {
             ...Phala.types,
-            'GistQuote': {
-                username: 'String',
-                accountId: 'AccountId',
+            'NextNonceOk': {
+                next_nonce: 'u32',
+            },
+            'RuntimeVersionOk': {
+                spec_name: 'String',
+                impl_name: 'String',
+                authoring_version: 'u32',
+                spec_version: 'u32',
+                impl_version: 'u32',
+                apis: 'Vec<(String, u32)>',
+                transaction_version: 'u32',
+                state_version: 'u32',
+            },
+            'GenesisHashOk': {
+                genesis_hash: "String",
             },
         }
     });
@@ -176,7 +189,7 @@ async function main() {
         );
     }
     console.log('Fat Contract: connected');
-    const { FatBadges, EasyOracle, AdvancedJudger } = contracts;
+    const { PhatRpc } = contracts;
     
     // set up the contracts
     const easyBadgeId = 0;
@@ -186,18 +199,6 @@ async function main() {
             // set the api key & polkadot, kusama & khala RPC nodes
             PhatRpc.tx.setApiKey({}, '349bf380-7e7c-4827-86f2-60c7d738c784'),
             PhatRpc.tx.setChainInfo({}, 'kusama', '43yBMNc2hevrovqs7CiJCydFamdLyDFC1pNT79iLHDMaNqjh'),
-            // set up the badges; assume the ids are 0 and 1.
-            // FatBadges.tx.newBadge({}, 'fat-easy-challenge'),
-            // FatBadges.tx.newBadge({}, 'fat-adv-challenge'),
-            // fill with code
-            // FatBadges.tx.addCode({}, easyBadgeId, ['easy1', 'easy2']),
-            // FatBadges.tx.addCode({}, advBadgeId, ['adv1', 'adv2']),
-            // set the issuers
-            // FatBadges.tx.addIssuer({}, easyBadgeId, artifacts.EasyOracle.address),
-            // FatBadges.tx.addIssuer({}, advBadgeId, artifacts.AdvancedJudger.address),
-            // config the issuers
-            // EasyOracle.tx.configIssuer({}, artifacts.FatBadges.address, easyBadgeId),
-            // AdvancedJudger.tx.configIssuer({}, artifacts.FatBadges.address, advBadgeId),
         ]),
         bob,
         true,
@@ -209,15 +210,18 @@ async function main() {
     // basic checks
     console.log('Fat Contract: basic checks');
 
-    const apiKey = await PhatRpc.query.getApiKey(certAlice, {});
+    const apiKey = await PhatRpc.query.getApiKey(certBob, {});
     console.log('API Key:', apiKey.output.toHuman());
 
-    const chainPubKey = await PhatRpc.query.getChainAccountId(certAlice, {}, 'kusama');
+    const chainPubKey = await PhatRpc.query.getChainAccountId(certBob, {}, 'kusama');
     console.log('Kusama Chain Public Key:', chainPubKey.output.toHuman());
+
+    const rpcEndpointUrl = await PhatRpc.query.getRpcEndpoint(certBob, {}, 'kusama');
+    console.log('Kusama RPC Endpoint URL:', rpcEndpointUrl.output.toHuman());
 
     // Get Next Nonce
     const nextNonce = await PhatRpc.query['submittableOracle::getNextNonce'](
-        certAlice, {},
+        certBob, {},
         'kusama'
     );
     console.log(
@@ -228,7 +232,7 @@ async function main() {
 
     // Get Runtime Version
     const runtimeVersion = await PhatRpc.query['submittableOracle::getRuntimeVersion'](
-        certAlice, {},
+        certBob, {},
         'kusama'
     );
     console.log(
@@ -239,7 +243,7 @@ async function main() {
 
     // Get Genesis Hash
     const genesisHash = await PhatRpc.query['submittableOracle::getGenesisHash'](
-        certAlice, {},
+        certBob, {},
         'kusama'
     );
     console.log(
@@ -248,41 +252,6 @@ async function main() {
     );
     console.log(PhatRpc.registry.createType('GenesisHashOk', genesisHash.output.asOk.data.toHex()).toHuman());
 
-    //const attestObj = attest.output.asOk;
-
-    // submit attestation
-    // await txqueue.submit(
-    //     EasyOracle.tx.redeem({}, attestObj),
-    //     alice,
-    //     true,
-    // );
-    // await blockBarrier(api, prpc);
-
-    // const aliceBadge = await FatBadges.query.get(certAlice, {}, easyBadgeId);
-    // console.log('Alice won:', aliceBadge.output.toHuman());
-    //
-    // // test the advanced challenge judger
-    // const advAttest = await AdvancedJudger.query.checkContract(
-    //     certAlice, {},
-    //     artifacts.EasyOracle.address,
-    //     'https://gist.githubusercontent.com/h4x3rotab/4b6bb4aa8dc9956af9c976a906daaa2a/raw/80da37a6e9e91b9e3929ba284c826631644f7d1a/test'
-    // );
-    // console.log(
-    //     'Advanced attestation:',
-    //     advAttest.result.isOk ? advAttest.output.toHuman() : advAttest.result.toHuman()
-    // );
-    // const advAttestObj = advAttest.output.asOk;
-    //
-    // // submit attestation
-    // await txqueue.submit(
-    //     AdvancedJudger.tx.redeem({}, advAttestObj),
-    //     bob,
-    //     true,
-    // );
-    // await blockBarrier(api, prpc);
-    //
-    // const aliceAdvBadge = await FatBadges.query.get(certBob, {}, advBadgeId);
-    // console.log('Bob won adv:', aliceAdvBadge.output.toHuman());
 }
 
 main().then(process.exit).catch(err => console.error('Crashed', err)).finally(() => process.exit(-1));
