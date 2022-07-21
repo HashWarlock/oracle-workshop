@@ -1,6 +1,6 @@
 {
   "source": {
-    "hash": "0x55a4a5d5dfb935a3b3676df1d343e2bd7d8d0a44ae42a8613ccfcf57340131fc",
+    "hash": "0x66ca20caee698244af41e3a164886e9187e8437f1b2a9674d078af7b2a849b5a",
     "language": "ink! 3.3.0",
     "compiler": "rustc 1.64.0-nightly"
   },
@@ -159,6 +159,37 @@
           "selector": "0x0034affa"
         },
         {
+          "args": [],
+          "docs": [],
+          "label": "SubmittableOracle::admin",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "AccountId"
+            ],
+            "type": 0
+          },
+          "selector": "0x395849c6"
+        },
+        {
+          "args": [],
+          "docs": [
+            " The attestation verifier"
+          ],
+          "label": "SubmittableOracle::verifier",
+          "mutates": false,
+          "payable": false,
+          "returnType": {
+            "displayName": [
+              "attestation",
+              "Verifier"
+            ],
+            "type": 12
+          },
+          "selector": "0x05dc0314"
+        },
+        {
           "args": [
             {
               "label": "chain",
@@ -182,7 +213,7 @@
               "result",
               "Result"
             ],
-            "type": 12
+            "type": 13
           },
           "selector": "0x51e73011"
         },
@@ -210,7 +241,7 @@
               "result",
               "Result"
             ],
-            "type": 12
+            "type": 13
           },
           "selector": "0x88b2209f"
         },
@@ -238,40 +269,9 @@
               "result",
               "Result"
             ],
-            "type": 12
+            "type": 13
           },
           "selector": "0x10ef159b"
-        },
-        {
-          "args": [],
-          "docs": [],
-          "label": "SubmittableOracle::admin",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "AccountId"
-            ],
-            "type": 0
-          },
-          "selector": "0x395849c6"
-        },
-        {
-          "args": [],
-          "docs": [
-            " The attestation verifier"
-          ],
-          "label": "SubmittableOracle::verifier",
-          "mutates": false,
-          "payable": false,
-          "returnType": {
-            "displayName": [
-              "attestation",
-              "Verifier"
-            ],
-            "type": 14
-          },
-          "selector": "0x05dc0314"
         }
       ]
     },
@@ -619,12 +619,33 @@
         "id": 12,
         "type": {
           "def": {
+            "composite": {
+              "fields": [
+                {
+                  "name": "pubkey",
+                  "type": 3,
+                  "typeName": "Vec<u8>"
+                }
+              ]
+            }
+          },
+          "path": [
+            "fat_utils",
+            "attestation",
+            "Verifier"
+          ]
+        }
+      },
+      {
+        "id": 13,
+        "type": {
+          "def": {
             "variant": {
               "variants": [
                 {
                   "fields": [
                     {
-                      "type": 13
+                      "type": 14
                     }
                   ],
                   "index": 0,
@@ -645,7 +666,7 @@
           "params": [
             {
               "name": "T",
-              "type": 13
+              "type": 14
             },
             {
               "name": "E",
@@ -658,7 +679,7 @@
         }
       },
       {
-        "id": 13,
+        "id": 14,
         "type": {
           "def": {
             "composite": {
@@ -680,27 +701,6 @@
             "fat_utils",
             "attestation",
             "Attestation"
-          ]
-        }
-      },
-      {
-        "id": 14,
-        "type": {
-          "def": {
-            "composite": {
-              "fields": [
-                {
-                  "name": "pubkey",
-                  "type": 3,
-                  "typeName": "Vec<u8>"
-                }
-              ]
-            }
-          },
-          "path": [
-            "fat_utils",
-            "attestation",
-            "Verifier"
           ]
         }
       }

@@ -167,6 +167,17 @@ mod phat_rpc {
     impl SubmittableOracle for PhatRpc {
         // Queries
 
+        #[ink(message)]
+        fn admin(&self) -> AccountId {
+            self.admin.clone()
+        }
+
+        /// The attestation verifier
+        #[ink(message)]
+        fn verifier(&self) -> attestation::Verifier {
+            self.attestation_verifier.clone()
+        }
+
         /// Get account's next nonce on a specific chain.
         #[ink(message)]
         fn get_next_nonce(
@@ -301,17 +312,6 @@ mod phat_rpc {
             let result = self.attestation_generator.sign(genesis_hash_string);
 
             Ok(result)
-        }
-
-        #[ink(message)]
-        fn admin(&self) -> AccountId {
-            self.admin.clone()
-        }
-
-        /// The attestation verifier
-        #[ink(message)]
-        fn verifier(&self) -> attestation::Verifier {
-            self.attestation_verifier.clone()
         }
     }
 
