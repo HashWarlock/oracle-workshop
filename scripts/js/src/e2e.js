@@ -197,8 +197,8 @@ async function main() {
     await txqueue.submit(
         api.tx.utility.batchAll([
             // set the api key & polkadot, kusama & khala RPC nodes
-            PhatRpc.tx.setApiKey({}, '349bf380-7e7c-4827-86f2-60c7d738c784'),
-            PhatRpc.tx.setChainInfo({}, 'kusama', '43yBMNc2hevrovqs7CiJCydFamdLyDFC1pNT79iLHDMaNqjh'),
+            PhatRpc.tx.setApiKey({}, 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'),
+            PhatRpc.tx.setChainInfo({}, 'kusama', '<Add-KSM-Public-Key>'),
         ]),
         bob,
         true,
