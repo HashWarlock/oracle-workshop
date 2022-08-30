@@ -859,9 +859,9 @@ dependencies = [
 
 [[package]]
 name = "pink-extension"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4791e7b6e0dc83f8909068013399f2221f9ca570d7874e2f0312c0502787e1b2"
+checksum = "284d0f2ecf5d52c5b043a2fcf7aa284252ed3b6f79499b3c3495a605995b42da"
 dependencies = [
  "ink_env",
  "ink_lang",

@@ -32,6 +32,7 @@ mod phat_rpc {
     use pink::logger::{Level, Logger};
     use pink::{http_post, PinkEnvironment};
 
+    use core::fmt::Write;
     use fat_utils::attestation;
     use ink_prelude::{
         format,
@@ -57,6 +58,8 @@ mod phat_rpc {
         attestation_generator: attestation::Generator,
         rpc_nodes: Mapping<String, String>,
         chain_account_id: Mapping<String, String>,
+        account_public: Mapping<String, attestation::Verifier>,
+        account_private: Mapping<String, attestation::Generator>,
         api_key: String,
         is_api_key_set: bool,
     }
@@ -72,6 +75,7 @@ mod phat_rpc {
         NoPermissions,
         ApiKeyNotSet,
         ChainNotConfigured,
+        InvalidAccount,
     }
 
     /// Type alias for the contract's result type.
@@ -96,11 +100,7 @@ mod phat_rpc {
 
         /// Set the RPC node for parachain.
         #[ink(message)]
-        pub fn set_chain_info(
-            &mut self,
-            chain: String,
-            account_id: String,
-        ) -> core::result::Result<(), Error> {
+        pub fn set_chain_info(&mut self, chain: String) -> core::result::Result<(), Error> {
             if self.admin != self.env().caller() {
                 return Err(Error::NoPermissions);
             }
@@ -112,8 +112,15 @@ mod phat_rpc {
                 "https://{}.api.onfinality.io/rpc?apikey={}",
                 chain, self.api_key
             );
+            let salt = format!("{}-phat-acccount", chain);
+            // Create the attestation helpers
+            let (generator, verifier) = attestation::create(salt.as_bytes());
+            let account_public_hex = self::vec_to_hex_string(&verifier.pubkey);
+
             self.rpc_nodes.insert(&chain, &http_endpoint);
-            self.chain_account_id.insert(&chain, &account_id);
+            self.chain_account_id.insert(&chain, &account_public_hex);
+            self.account_public.insert(&account_public_hex, &verifier);
+            self.account_private.insert(&account_public_hex, &generator);
             Ok(())
         }
 
@@ -408,6 +415,14 @@ mod phat_rpc {
         let (genesis_hash, _): (GenesisHash, usize) = serde_json_core::from_slice(body).unwrap();
         let result = genesis_hash.result.to_string().parse().unwrap();
         Ok(result)
+    }
+
+    fn vec_to_hex_string(v: &Vec<u8>) -> String {
+        let mut res = "0x".to_string();
+        for a in v.iter() {
+            write!(res, "{:02x}", a).expect("should create hex string");
+        }
+        res
     }
 
     #[cfg(test)]
