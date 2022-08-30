@@ -20,6 +20,7 @@ pink-extension = { version = "0.1.13", default-features = false }
 hex = { version = "0.4.3", default-features = false, features = ["alloc"] }
 serde = { version = "1.0.140", default-features = false, features = ["derive", "alloc"]}
 serde-json-core = { version = "0.4.0" }
+base58 = { version = "0.2.0" }
 
 fat_utils = { path = "../utils", default-features = false }
 

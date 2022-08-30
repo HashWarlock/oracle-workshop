@@ -32,6 +32,7 @@ mod phat_rpc {
     use pink::logger::{Level, Logger};
     use pink::{http_post, PinkEnvironment};
 
+    use base58::ToBase58;
     use core::fmt::Write;
     use fat_utils::attestation;
     use ink_prelude::{
@@ -115,12 +116,14 @@ mod phat_rpc {
             let salt = format!("{}-phat-acccount", chain);
             // Create the attestation helpers
             let (generator, verifier) = attestation::create(salt.as_bytes());
-            let account_public_hex = self::vec_to_hex_string(&verifier.pubkey);
+            let account_public: &[u8] = &verifier.pubkey;
+            let account_public_ss58 = account_public.to_base58();
 
             self.rpc_nodes.insert(&chain, &http_endpoint);
-            self.chain_account_id.insert(&chain, &account_public_hex);
-            self.account_public.insert(&account_public_hex, &verifier);
-            self.account_private.insert(&account_public_hex, &generator);
+            self.chain_account_id.insert(&chain, &account_public_ss58);
+            self.account_public.insert(&account_public_ss58, &verifier);
+            self.account_private
+                .insert(&account_public_ss58, &generator);
             Ok(())
         }
 
