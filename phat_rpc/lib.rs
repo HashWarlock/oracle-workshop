@@ -46,6 +46,7 @@ mod phat_rpc {
     use scale::{Decode, Encode};
     use serde::Deserialize;
     use serde_json_core::from_slice;
+    use sp_core::crypto::{Ss58AddressFormat, Ss58AddressFormatRegistry};
 
     static LOGGER: Logger = Logger::with_max_level(Level::Info);
     pink::register_logger!(&LOGGER);
@@ -117,7 +118,32 @@ mod phat_rpc {
             // Create the attestation helpers
             let (generator, verifier) = attestation::create(salt.as_bytes());
             let account_public: &[u8] = &verifier.pubkey;
-            let account_public_ss58 = account_public.to_base58();
+            //let account_public_ss58 = account_public.to_base58();
+            let version = match Ss58AddressFormat::try_from(chain.as_str()) {
+                Ok(version) => {
+                    version.prefix()
+                },
+                Err(_e) => {
+                    return Err(Error::InvalidAccount)
+                }
+            };
+
+            let ident: u16 = u16::from(version) & 0b0011_1111_1111_1111;
+            let mut v: Vec<u8> = match ident {
+                0..=63 => vec![ident as u8],
+                64..=16_383 => {
+                    let first = ((ident & 0b0000_0000_1111_1100) as u8) >> 2;
+                    let second = ((ident >> 8) as u8) | ((ident & 0b0000_0000_0000_0011) as u8) << 6;
+                    vec![first | 0b01000000, second]
+                }
+                _ => unreachable!("masked out the upper two bits; qed"),
+            };
+
+            let account_public: &[u8; 32] = account_public.try_into().expect("works");
+            v.extend(account_public);
+            //let r = ss58hash(&v);
+            //v.extend(&r.as_bytes()[0..2]);
+            let account_public_ss58 = v.to_base58();
 
             self.rpc_nodes.insert(&chain, &http_endpoint);
             self.chain_account_id.insert(&chain, &account_public_ss58);

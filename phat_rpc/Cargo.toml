@@ -5,15 +5,16 @@ authors = ["Joshua <hashwarlock@phala.network>"]
 edition = "2021"
 
 [dependencies]
-ink_prelude = { version = "3.1.0", default-features = false }
-ink_primitives = { version = "3.1.0", default-features = false }
-ink_metadata = { version = "3.1.0", default-features = false, features = ["derive"], optional = true }
-ink_env = { version = "3.1.0", default-features = false }
-ink_storage = { version = "3.1.0", default-features = false }
-ink_lang = { version = "3.1.0", default-features = false }
+ink_prelude = { version = "3.3.0", default-features = false }
+ink_primitives = { version = "3.3.0", default-features = false }
+ink_metadata = { version = "3.3.0", default-features = false, features = ["derive"], optional = true }
+ink_env = { version = "3.3.0", default-features = false }
+ink_storage = { version = "3.3.0", default-features = false }
+ink_lang = { version = "3.3.0", default-features = false }
 
-scale = { package = "parity-scale-codec", version = "3.0", default-features = false, features = ["derive"] }
-scale-info = { version = "2", default-features = false, features = ["derive"], optional = true }
+sp-core = { git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.27", default-features = false, features = ["full_crypto"] }
+scale = { package = "parity-scale-codec", version = "3.1", default-features = false, features = ["derive"] }
+scale-info = { version = "2.1", default-features = false, features = ["derive"], optional = true }
 
 openbrush = { path = "../vendor/openbrush-contracts", version = "~2.1.0", default-features = false }
 pink-extension = { version = "0.1.13", default-features = false }
