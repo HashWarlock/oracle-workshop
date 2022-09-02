@@ -197,8 +197,8 @@ async function main() {
     await txqueue.submit(
         api.tx.utility.batchAll([
             // set the api key & polkadot, kusama & khala RPC nodes
-            PhatRpc.tx.setApiKey({}, 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'),
-            PhatRpc.tx.setChainInfo({}, 'kusama', '<Add-KSM-Public-Key>'),
+            PhatRpc.tx.setApiKey({}, '349bf380-7e7c-4827-86f2-60c7d738c784'),
+            PhatRpc.tx.setChainInfo({}, 'kusama'),
         ]),
         bob,
         true,
@@ -207,7 +207,7 @@ async function main() {
     // wait for the worker to sync to the bockchain
     await blockBarrier(api, prpc);
 
-    // basic checks
+    // basic checks 0x76d579293581ba13623d2084925d28b632a55dcae540958d1f3680bbc786c65b
     console.log('Fat Contract: basic checks');
 
     const apiKey = await PhatRpc.query.getApiKey(certBob, {});
@@ -239,7 +239,7 @@ async function main() {
         'Kusama Runtime Version:',
         runtimeVersion.result.isOk ? runtimeVersion.output.toHuman() : runtimeVersion.result.toHuman()
     );
-    console.log(PhatRpc.registry.createType('GenesisHashOk', runtimeVersion.output.asOk.data.toHex()).toHuman());
+    console.log(PhatRpc.registry.createType('RuntimeVersionOk', runtimeVersion.output.asOk.data.toHex()).toHuman());
 
     // Get Genesis Hash
     const genesisHash = await PhatRpc.query['submittableOracle::getGenesisHash'](

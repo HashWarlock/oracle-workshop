@@ -46,7 +46,7 @@ mod phat_rpc {
     use scale::{Decode, Encode};
     use serde::Deserialize;
     use serde_json_core::from_slice;
-    use sp_core::crypto::{Ss58AddressFormat, Ss58AddressFormatRegistry};
+    use sp_core::crypto::{Ss58AddressFormat};
 
     static LOGGER: Logger = Logger::with_max_level(Level::Info);
     pink::register_logger!(&LOGGER);
@@ -114,14 +114,14 @@ mod phat_rpc {
                 "https://{}.api.onfinality.io/rpc?apikey={}",
                 chain, self.api_key
             );
-            let salt = format!("{}-phat-acccount", chain);
+            let salt = chain.clone();
             // Create the attestation helpers
             let (generator, verifier) = attestation::create(salt.as_bytes());
             let account_public: &[u8] = &verifier.pubkey;
             //let account_public_ss58 = account_public.to_base58();
             let version = match Ss58AddressFormat::try_from(chain.as_str()) {
                 Ok(version) => {
-                    version.prefix()
+                    version
                 },
                 Err(_e) => {
                     return Err(Error::InvalidAccount)
@@ -141,8 +141,8 @@ mod phat_rpc {
 
             let account_public: &[u8; 32] = account_public.try_into().expect("works");
             v.extend(account_public);
-            //let r = ss58hash(&v);
-            //v.extend(&r.as_bytes()[0..2]);
+            let r = ss58hash(&v);
+            v.extend(&r.as_bytes()[0..2]);
             let account_public_ss58 = v.to_base58();
 
             self.rpc_nodes.insert(&chain, &http_endpoint);
@@ -454,6 +454,15 @@ mod phat_rpc {
         res
     }
 
+    const PREFIX: &[u8] = b"SS58PRE";
+
+    fn ss58hash(data: &[u8]) -> blake2_rfc::blake2b::Blake2bResult {
+        let mut context = blake2_rfc::blake2b::Blake2b::new(64);
+        context.update(PREFIX);
+        context.update(data);
+        context.finalize()
+    }
+
     #[cfg(test)]
     mod tests {
         use super::*;
@@ -461,6 +470,43 @@ mod phat_rpc {
 
         fn default_accounts() -> ink_env::test::DefaultAccounts<PinkEnvironment> {
             ink_env::test::default_accounts::<Environment>()
+        }
+
+        #[ink::test]
+        fn can_set_chain_info() {
+            use pink_extension::chain_extension::{mock, HttpResponse};
+            fat_utils::test_helper::mock_all();
+            let salt = "kusama";
+            // Create the attestation helpers
+            let (generator, verifier) = attestation::create(salt.as_bytes());
+            let account_public: &[u8] = &verifier.pubkey;
+            //let account_public_ss58 = account_public.to_base58();
+            let version = match Ss58AddressFormat::try_from(salt) {
+                Ok(version) => {
+                    // println!("{:?}", version);
+                    version
+                },
+                Err(_e) => {
+                    Ss58AddressFormat::custom(0u16)
+                }
+            };
+            let ident: u16 = u16::from(version) & 0b0011_1111_1111_1111;
+            let mut v: Vec<u8> = match ident {
+                0..=63 => vec![ident as u8],
+                64..=16_383 => {
+                    let first = ((ident & 0b0000_0000_1111_1100) as u8) >> 2;
+                    let second = ((ident >> 8) as u8) | ((ident & 0b0000_0000_0000_0011) as u8) << 6;
+                    vec![first | 0b01000000, second]
+                }
+                _ => unreachable!("masked out the upper two bits; qed"),
+            };
+            v.extend(account_public);
+            let r = ss58hash(&v);
+            v.extend(&r.as_bytes()[0..2]);
+            let account_public_ss58 = v.to_base58();
+            // println!("{:?}", v);
+            // println!("{}", account_public_ss58);
+            assert_eq!("HF39woh1kRBzQNseVHMLccjeay85KsNAHuJh76Ahp5WAXd4", account_public_ss58);
         }
 
         #[ink::test]
