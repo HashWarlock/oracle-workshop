@@ -6,7 +6,6 @@ members = [
     "easy_oracle",
     "advanced_judger",
     "phat_rpc",
-    "utils",
     "utils/environmental",
 ]
 
